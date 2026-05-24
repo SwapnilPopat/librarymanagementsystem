@@ -1,8 +1,10 @@
-function App() {
-  const books = ["Clean Code", "Harry Potter", "The Alchemist","Mastery"];
+import { useState } from "react";
 
-  function handleClick(){
-    alert("Book button clicked");
+function App() {
+  const [books, setBooks] = useState(["Clean Code", "Harry Potter", "The Alchemist","Mastery"]);
+
+  function handleAddBook(){
+    setBooks([...books,"New Book"]);
   }
   return (
     <div>
@@ -14,7 +16,7 @@ function App() {
         books.map((book, index) => (<li key={index}>{book}</li>))
         }
       </ul>
-      <button onClick={handleClick}>Add Book</button>
+      <button onClick={handleAddBook}>Add Book</button>
     </div>
   );
 }
