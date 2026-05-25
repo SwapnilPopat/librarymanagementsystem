@@ -4,16 +4,17 @@ import "./App.css";
 
 function App() {
   const [books, setBooks] = useState([
-    "Clean Code",
-    "Harry Potter",
-    "The Alchemist",
+    { title: "Clean Code", issued: false },
+    { title: "Harry Potter", issued: true },
+    { title: "The Alchemist", issued: false },
   ]);
   const [newBook, setNewBook] = useState("");
   const [search, setSearch] = useState("");
 
   function handleAddBook() {
     if (newBook.trim() === "") return;
-    setBooks([...books, newBook]);
+
+    setBooks([...books, { title: newBook, issued: false }]);
     setNewBook("");
   }
 
@@ -22,8 +23,15 @@ function App() {
     setBooks(updatedBooks);
   }
 
+  function toggleIssued(indexToToggle) {
+    const updatedBooks = books.map((book, index) =>
+      index === indexToToggle ? { ...book, issued: !book.issued } : book
+    );
+    setBooks(updatedBooks);
+  }
+
   const filteredBooks = books.filter((book) =>
-    book.toLowerCase().includes(search.toLowerCase())
+    book.title.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -48,7 +56,11 @@ function App() {
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      <BookList books={filteredBooks} onDelete={handleDeleteBook} />
+      <BookList
+        books={filteredBooks}
+        onDelete={handleDeleteBook}
+        onToggleIssued={toggleIssued}
+      />
     </div>
   );
 }

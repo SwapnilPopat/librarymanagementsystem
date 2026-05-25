@@ -1,9 +1,12 @@
-function BookList({books, onDelete}){
+function BookList({books, onDelete, onToggleIssued}){
     return(
         <ul>
             {books.map((book, index) => (
                 <li key={index}>
-                    {book}{" "} <button onClick={() => onDelete(index)} > Delete </button>
+                    {book.title} - {book.issued ? "Issued" : "Available"}{" "}
+                    <button onClick={() => onToggleIssued(index)}> Toggle Status </button>
+                    {" "}
+                    <button onClick={() => onDelete(index)} > Delete </button>
                 </li>
             ))}
         </ul>
