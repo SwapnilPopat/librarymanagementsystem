@@ -1,65 +1,100 @@
-import { useState } from "react";
+import { useState, useEffect , useMemo } from "react";
 import BookList from "./BookList";
+import BookForm from "./BookForm";
+import SearchBar from "./SearchBar";
 import "./App.css";
 
+
 function App() {
-  const [books, setBooks] = useState([
-    { title: "Clean Code", issued: false },
-    { title: "Harry Potter", issued: true },
-    { title: "The Alchemist", issued: false },
-  ]);
+const [books, setBooks] = useState(() => {
+    const savedBooks = localStorage.getItem("books");
+    return savedBooks
+      ? JSON.parse(savedBooks)
+      : [
+          { id: 1, title: "Clean Code", issued: false },
+          { id: 2, title: "Harry Potter", issued: true },
+          { id: 3, title: "The Alchemist", issued: false },
+        ];
+  });
+
   const [newBook, setNewBook] = useState("");
   const [search, setSearch] = useState("");
 
-  function handleAddBook() {
+  const totalBooks = books.length;
+  const issuedBooks = books.filter((book) => book.issued).length;
+  const availableBooks = books.filter((book) => !book.issued).length;
+
+  const filteredBooks = useMemo(() => {
+  return books.filter((book) =>
+    book.title.toLowerCase().includes(search.toLowerCase())
+  );
+}, [books, search]);
+
+  useEffect(() => {
+    localStorage.setItem("books", JSON.stringify(books));
+  }, [books]);
+  
+function handleAddBook() {
     if (newBook.trim() === "") return;
 
-    setBooks([...books, { title: newBook, issued: false }]);
+    const bookToAdd = {
+      id: Date.now(),
+      title: newBook,
+      issued: false,
+    };
+
+    setBooks([...books, bookToAdd]);
     setNewBook("");
   }
 
-  function handleDeleteBook(indexToDelete) {
-    const updatedBooks = books.filter((book, index) => index !== indexToDelete);
-    setBooks(updatedBooks);
-  }
+function handleDeleteBook(idToDelete) {
+  const updatedBooks = books.filter((book) => book.id !== idToDelete);
+  setBooks(updatedBooks);
+}
 
-  function toggleIssued(indexToToggle) {
-    const updatedBooks = books.map((book, index) =>
-      index === indexToToggle ? { ...book, issued: !book.issued } : book
-    );
-    setBooks(updatedBooks);
-  }
-
-  const filteredBooks = books.filter((book) =>
-    book.title.toLowerCase().includes(search.toLowerCase())
+function toggleIssued(idToToggle) {
+  const updatedBooks = books.map((book) =>
+    book.id === idToToggle ? { ...book, issued: !book.issued } : book
   );
+  setBooks(updatedBooks);
+}
+
+function handleEditBook(idToEdit) {
+  const updatedTitle = prompt("Enter new book title:");
+  if (!updatedTitle || updatedTitle.trim() === "") return;
+
+  const updatedBooks = books.map((book) =>
+    book.id === idToEdit ? { ...book, title: updatedTitle } : book
+  );
+
+  setBooks(updatedBooks);
+}
+
 
   return (
     <div className="container">
       <h1>Library Management App</h1>
       <h2>Book List</h2>
 
-      <input
-        type="text"
-        placeholder="Enter book name"
-        value={newBook}
-        onChange={(e) => setNewBook(e.target.value)}
+      <BookForm
+        newBook={newBook}
+        setNewBook={setNewBook}
+        onAddBook={handleAddBook}
       />
-      <button onClick={handleAddBook}>Add Book</button>
 
       <br /><br />
 
-      <input
-        type="text"
-        placeholder="Search book"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+      <SearchBar search={search} setSearch={setSearch} />
+
+      <p>Total: {totalBooks}</p>
+      <p>Issued: {issuedBooks}</p>
+      <p>Available: {availableBooks}</p>
 
       <BookList
         books={filteredBooks}
         onDelete={handleDeleteBook}
         onToggleIssued={toggleIssued}
+        onEditBook={handleEditBook}
       />
     </div>
   );
